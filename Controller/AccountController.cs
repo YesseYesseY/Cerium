@@ -1,14 +1,12 @@
 using Cerium.Attributes;
+using Cerium.Managers;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Cerium.Controller;
 
 [CeriumController]
 public static class AccountController
 {
-    public static string AccountId = "c7935d0bf67b617271a3344d4027826e";
-    public static string AccountUsername = "YesseY";
-    public static string AccountEmail = "YesseY@yesmail.yes";
-
     [CeriumRoute("POST", "/account/api/oauth/token")]
     public static async Task<IResult> PostOauthToken(HttpRequest request)
     {
@@ -36,6 +34,9 @@ public static class AccountController
             return Results.NotFound();
         }
 
+        string username = form["username"].ToString();
+        var account = AccountManager.GetOrCreateFromUsername(username);
+
         return Results.Json(new
         {
             access_token = "accesstoken",
@@ -45,36 +46,40 @@ public static class AccountController
             refresh_token = "refreshtoken",
             refresh_expires = 28800,
             refresh_expires_at = "9999-08-30T20:32:21.466Z",
-            account_id = AccountId,
+            account_id = account.Id,
             client_id = "ec684b8c687f479fadea3cb2ad83f5c6",
             internal_client = true,
             client_service = "prod-fn",
-            displayName = AccountUsername,
+            displayName = account.Username,
             app = "prod-fn",
-            in_app_id = AccountId,
+            in_app_id = account.Username,
             product_id = "prod-fn",
             application_id = "fghi4567FNFBKFz3E4TROb0bmPS8h1GW"
         });
     }
 
     [CeriumRoute("GET", "/account/api/public/account/{accountId}")]
-    public static IResult GetAccountLookupAccountId(string accountId, HttpRequest request)
+    public static IResult GetAccountLookupAccountId(Guid accountId, HttpRequest request)
     {
+        var account = AccountManager.GetFromAccountId(accountId);
+        if (account is null)
+            return Results.NotFound();
+
         return Results.Json(new
         {
-            id = AccountId,
-            displayName = AccountUsername,
-            name = AccountUsername,
-            email = AccountEmail,
+            id = account.Id,
+            displayName = account.Username,
+            name = account.Username,
+            email = account.Email,
             failedLoginAttempts = 0,
             lastLogin = "2000-01-01T00:00:00.000Z",
             numberOfDisplayNameChanges = 0,
             ageGroup = "UNKNOWN",
             headless = false,
             country = "BE",
-            lastName = AccountUsername,
+            lastName = account.Username,
             phoneNumber = "12345667890",
-            company = AccountUsername,
+            company = "Cerium",
             preferredLanguage = "en",
             lastDisplayNameChange = "2000-01-01T00:00:00.000Z",
             canUpdateDisplayName = true,
@@ -92,16 +97,17 @@ public static class AccountController
     }
 
     [CeriumRoute("GET", "/account/api/public/account")]
-    public static IResult GetAccountLookupAccountIds(HttpRequest request)
+    public static async Task<IResult> GetAccountLookupAccountIds(HttpRequest request)
     {
-        return Results.Json(new[]
-        {
-            new
-            {
-                id = AccountId,
-                displayName = AccountUsername,
-                externalAuths = Array.Empty<object>()
-            }
-        });
+        return Results.NotFound();
+        // return Results.Json(new[]
+        // {
+        //     new
+        //     {
+        //         id = AccountId,
+        //         displayName = AccountUsername,
+        //         externalAuths = Array.Empty<object>()
+        //     }
+        // });
     }
 }

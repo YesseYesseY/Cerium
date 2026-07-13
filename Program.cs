@@ -4,12 +4,16 @@ using Cerium;
 using Cerium.Attributes;
 using Cerium.Controller;
 using Cerium.JsonConverters;
+using Cerium.Managers;
+
+AccountManager.Init();
 
 var builder =  WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.Converters.Add(new DateTimeJsonConverter());
+    options.SerializerOptions.Converters.Add(new GuidJsonConverter());
 });
 
 var app = builder.Build();
