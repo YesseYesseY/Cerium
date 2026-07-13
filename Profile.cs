@@ -27,8 +27,15 @@ public class CommonCoreProfile : Profile
     public CommonCoreProfile() : base("common_core")
     {
         // TODO 23 more from 11.00
-        for (var i = 0; i < 21; i++)
-            AddItem(new Item($"HomebaseBannerColor:DefaultColor{i + 1}"));
+        for (var i = 0; i < 44; i++)
+        {
+            var item = new Item($"HomebaseBannerColor:DefaultColor{i + 1}");
+
+            if (i >= 21)
+                item.BuildLimit = 11.00f;
+
+            AddItem(item);
+        }
 
         for (var i = 0; i < 31; i++)
             AddItem(new Item($"HomebaseBannerIcon:StandardBanner{i + 1}"));
@@ -40,8 +47,8 @@ public class AthenaProfile : Profile
     public AthenaProfile() : base("athena")
     {
         SetAttribute("favorite_skydivecontrail", "" );
-        SetAttribute("favorite_glider", "" );
-        SetAttribute("favorite_pickaxe", "" );
+        SetAttribute("favorite_glider", "AthenaGlider:DefaultGlider" );
+        SetAttribute("favorite_pickaxe", "AthenaPickaxe:DefaultPickaxe" );
         SetAttribute("favorite_character", "" );
         SetAttribute("favorite_backpack", "" );
         SetAttribute("favorite_hat", "" );
@@ -53,17 +60,33 @@ public class AthenaProfile : Profile
         SetAttribute("favorite_musicpack", "" );
         SetAttribute("favorite_itemwraps", new[] { "", "", "", "", "", "" } );
         SetAttribute("favorite_pet", "" );
-        SetAttribute("favorite_dance", new[] { "", "", "", "", "", "" } );
+        SetAttribute("favorite_dance", new[] { "AthenaDance:EID_DanceMoves", "AthenaDance:EID_BoogieDown", "", "", "", "" } );
         SetAttribute("favorite_victorypose", "" );
         SetAttribute("favorite_personal_vehicle", "" );
-        SetAttribute("banner_color", "" );
-        SetAttribute("banner_icon", "" );
+        SetAttribute("banner_color", "DefaultColor21" );
+        SetAttribute("banner_icon", "StandardBanner15" );
         SetAttribute("level", 1 );
         SetAttribute("season_num", 7 );
         SetAttribute("book_level", 1 );
         SetAttribute("book_purchased", false);
 
-        AddItem(new Item("CosmeticLocker:cosmeticlocker_athena"));
+        // Free items
+        AddItem(new Item("AthenaDance:EID_DanceMoves"));
+        AddItem(new Item("AthenaDance:EID_BoogieDown"));
+
+        AddItem(new Item("AthenaPickaxe:DefaultPickaxe"));
+
+        AddItem(new Item("AthenaGlider:DefaultGlider"));
+        AddItem(new Item("AthenaGlider:Umbrella_SnowFlake"));
+        AddItem(new Item("AthenaGlider:Umbrella_PaperParasol"));
+        for (var i = 4; i < 26; i++)
+        {
+            var item = new Item($"AthenaGlider:Umbrella_Season_{i:D2}");
+            item.BuildLimit = i;
+            AddItem(item);
+        }
+
+        AddItem(new Item("CosmeticLocker:CosmeticLocker_Athena"));
         SetAttribute("loadouts", new[]
         {
             "CosmeticLocker:cosmeticlocker_athena"

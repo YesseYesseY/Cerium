@@ -39,7 +39,9 @@ public static class ProfileController
                     accountId = account.Id,
                     profileId = profileId,
                     version = "uwu",
-                    items = profile.Items.ToDictionary(i => i.Id, i => i.Objectify()),
+                    items = profile.Items
+                        .Where(i => i.BuildLimit < 0.0f || buildInfo.Build >= i.BuildLimit )
+                        .ToDictionary(i => i.Id, i => i.Objectify()),
                     stats = new
                     {
                         attributes = profile.Attributes
