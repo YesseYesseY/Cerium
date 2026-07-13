@@ -53,6 +53,10 @@ public static class ProfileController
 
             changes.Add(change);
         }
+        else
+        {
+            Console.WriteLine($"Profile not found: {profileId}");
+        }
 
         return Results.Json(new
         {

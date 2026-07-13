@@ -62,5 +62,11 @@ public class AthenaProfile : Profile
         SetAttribute("season_num", 7 );
         SetAttribute("book_level", 1 );
         SetAttribute("book_purchased", false);
+
+        AddItem(new Item("CosmeticLocker:cosmeticlocker_athena"));
+        SetAttribute("loadouts", new[]
+        {
+            "CosmeticLocker:cosmeticlocker_athena"
+        });
     }
 }

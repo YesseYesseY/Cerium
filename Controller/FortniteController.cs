@@ -25,4 +25,10 @@ public static class FortniteController
     {
         return Results.Json(Array.Empty<object>());
     }
+
+    [CeriumRoute("POST", "/datarouter/api/v1/public/data")]
+    public static IResult GetDataRouterData(HttpRequest request)
+    {
+        return Results.NoContent();
+    }
 }

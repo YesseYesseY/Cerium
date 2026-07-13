@@ -39,6 +39,6 @@ public class Account
 
     public Profile? GetProfile(string profileId)
     {
-        return Profiles[profileId];
+        return Profiles.GetValueOrDefault(profileId);
     }
 }

@@ -4,6 +4,7 @@ public class Item(string id, int quantity = 1)
 {
     public string Id { get; set; } = id;
     public int Quantity { get; set; } = quantity;
+    public Dictionary<string, object> Attributes { get; set; } = new();
 
     public object Objectify()
     {
