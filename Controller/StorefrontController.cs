@@ -1,7 +1,11 @@
-namespace Cerium;
+using Cerium.Attributes;
 
+namespace Cerium.Controller;
+
+[CeriumController]
 public static class StorefrontController
 {
+    [CeriumRoute("GET", "/fortnite/api/storefront/v2/keychain")]
     public static IResult GetKeychain(HttpRequest request)
     {
         return Results.Json(new[]

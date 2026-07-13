@@ -1,7 +1,11 @@
-namespace Cerium;
+using Cerium.Attributes;
 
+namespace Cerium.Controller;
+
+[CeriumController]
 public static class LightswitchController
 {
+    [CeriumRoute("GET", "/lightswitch/api/service/bulk/status")]
     public static IResult GetServiceStatusBulk(HttpRequest request)
     {
         return Results.Json(new[]

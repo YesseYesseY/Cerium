@@ -1,26 +1,50 @@
-﻿using System.Globalization;
+﻿using System.Linq.Expressions;
+using System.Reflection;
 using Cerium;
+using Cerium.Attributes;
+using Cerium.Controller;
 
 var builder =  WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 var app = builder.Build();
 
-app.MapGet("/account/api/public/account/{accountId}", AccountController.GetAccountLookupAccountId);
-app.MapGet("/account/api/public/account", AccountController.GetAccountLookupAccountIds);
-app.MapPost("/account/api/oauth/token", AccountController.PostOauthToken);
+var classTypes = Assembly.GetExecutingAssembly().GetTypes()
+    .Where(t => t.IsClass && t.GetCustomAttribute<CeriumControllerAttribute>() is not null)
+    .ToList();
 
-app.MapPost("/fortnite/api/game/v2/profile/{accountId}/client/{operation}", ProfileController.PostProfileOperation);
+foreach (var type in classTypes)
+{
+    var methods = type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
 
-app.MapGet("/fortnite/api/v2/versioncheck/Windows", FortniteController.GetVersionCheck);
-app.MapGet("/fortnite/api/game/v2/enabled_features", FortniteController.GetEnableFeatures);
-app.MapPost("/fortnite/api/game/v2/tryPlayOnPlatform/account/{accountId}", FortniteController.PostTryPlayOnPlatform);
+    foreach (var method in methods)
+    {
+        var routeAttribute = method.GetCustomAttribute<CeriumRouteAttribute>();
+        if (routeAttribute is null)
+        {
+            continue;
+        }
 
-app.MapGet("/fortnite/api/cloudstorage/user/{accountId}", CloudstorageController.GetUserFiles);
-app.MapGet("/fortnite/api/cloudstorage/system", CloudstorageController.GetSystemFiles);
+        string path = routeAttribute.Path;
+        string httpMethod = routeAttribute.Method;
 
-app.MapGet("/lightswitch/api/service/bulk/status", LightswitchController.GetServiceStatusBulk);
+        var paramTypes = method.GetParameters()
+            .Select(p => p.ParameterType)
+            .Append(method.ReturnType)
+            .ToArray();
 
-app.MapGet("/fortnite/api/storefront/v2/keychain", StorefrontController.GetKeychain);
+        Type delegateType = Expression.GetFuncType(paramTypes.ToArray());
+
+        switch (httpMethod)
+        {
+            case "GET":
+                app.MapGet(path, method.CreateDelegate(delegateType));
+                break;
+            case "POST":
+                app.MapPost(path, method.CreateDelegate(delegateType));
+                break;
+        }
+    }
+}
 
 app.MapFallback((HttpContext context) =>
 {
@@ -28,4 +52,5 @@ app.MapFallback((HttpContext context) =>
     return Results.NotFound();
 });
 
+Console.WriteLine("Running!");
 app.Run("http://127.0.0.1:3551");

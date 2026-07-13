@@ -1,9 +1,12 @@
-using System.Globalization;
+using Cerium.Attributes;
+using Cerium.Extensions;
 
-namespace Cerium;
+namespace Cerium.Controller;
 
+[CeriumController]
 public static class ProfileController
 {
+    [CeriumRoute("POST", "/fortnite/api/game/v2/profile/{accountId}/client/{operation}")]
     public static IResult PostProfileOperation(string accountId, string operation, HttpRequest request)
     {
         string profileId = "common_core";
@@ -18,7 +21,7 @@ public static class ProfileController
             profileChangesBaseRevision = 1,
             profileChanges = Array.Empty<object>(),
             profileCommandRevision = 1,
-            serverTime = DateTime.UtcNow.ToString("o", CultureInfo.InvariantCulture),
+            serverTime = DateTime.UtcNow.ToIsoString(),
             responseVersion = 1
         });
     }

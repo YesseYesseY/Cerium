@@ -1,11 +1,15 @@
-namespace Cerium;
+using Cerium.Attributes;
 
+namespace Cerium.Controller;
+
+[CeriumController]
 public static class AccountController
 {
     public static string AccountId = "c7935d0bf67b617271a3344d4027826e";
     public static string AccountUsername = "YesseY";
     public static string AccountEmail = "YesseY@yesmail.yes";
 
+    [CeriumRoute("POST", "/account/api/oauth/token")]
     public static async Task<IResult> PostOauthToken(HttpRequest request)
     {
         var form = await request.ReadFormAsync();
@@ -53,6 +57,7 @@ public static class AccountController
         });
     }
 
+    [CeriumRoute("GET", "/account/api/public/account/{accountId}")]
     public static IResult GetAccountLookupAccountId(string accountId, HttpRequest request)
     {
         return Results.Json(new
@@ -86,6 +91,7 @@ public static class AccountController
         });
     }
 
+    [CeriumRoute("GET", "/account/api/public/account")]
     public static IResult GetAccountLookupAccountIds(HttpRequest request)
     {
         return Results.Json(new[]
