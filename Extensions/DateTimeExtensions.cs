@@ -4,5 +4,5 @@ namespace Cerium.Extensions;
 
 public static class DateTimeExtensions
 {
-    public static string ToIsoString(this DateTime dt) => dt.ToString("o", CultureInfo.InvariantCulture);
+    public static string ToIsoString(this DateTime dt) => dt.ToString("yyyy-MM-dd'T'HH:mm:ss.fff'Z'"); // .ToString("o", CultureInfo.InvariantCulture);
 }

@@ -3,9 +3,15 @@ using System.Reflection;
 using Cerium;
 using Cerium.Attributes;
 using Cerium.Controller;
+using Cerium.JsonConverters;
 
 var builder =  WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new DateTimeJsonConverter());
+});
+
 var app = builder.Build();
 
 var classTypes = Assembly.GetExecutingAssembly().GetTypes()
