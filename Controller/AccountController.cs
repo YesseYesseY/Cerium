@@ -99,15 +99,24 @@ public static class AccountController
     [CeriumRoute("GET", "/account/api/public/account")]
     public static async Task<IResult> GetAccountLookupAccountIds(HttpRequest request)
     {
-        return Results.NotFound();
-        // return Results.Json(new[]
-        // {
-        //     new
-        //     {
-        //         id = AccountId,
-        //         displayName = AccountUsername,
-        //         externalAuths = Array.Empty<object>()
-        //     }
-        // });
+        var ret = new List<object>();
+
+        foreach (var accountIdStr in request.Query["accountId"].ToArray())
+        {
+            if (accountIdStr is null) continue;
+
+            var accountId = new Guid(accountIdStr);
+            var account = AccountManager.GetFromAccountId(accountId);
+            if (account is null) continue;
+
+            ret.Add(new
+            {
+                id = account.Id,
+                displayName = account.Username,
+                externalAuths = Array.Empty<object>()
+            });
+        }
+
+        return Results.Json(ret);
     }
 }
