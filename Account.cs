@@ -5,10 +5,10 @@ namespace Cerium;
 
 public class Account
 {
-    public Guid Id { get; }
-    public string Username { get; set; }
+    public Guid Id { get; init; }
+    public string Username { get; init; }
     public DateTime Created { get; }
-    public Dictionary<string, Profile> Profiles { get; set; }
+    public Dictionary<string, Profile> Profiles { get; init; }
 
     [JsonIgnore]
     public string Email => $"{Id:N}@yesmail.com";
@@ -40,5 +40,13 @@ public class Account
     public Profile? GetProfile(string profileId)
     {
         return Profiles.GetValueOrDefault(profileId);
+    }
+
+    public Profile GetOrCreateProfile(string profileId)
+    {
+        if (!Profiles.ContainsKey(profileId))
+            Profiles[profileId] = new Profile(profileId);
+
+        return Profiles[profileId];
     }
 }

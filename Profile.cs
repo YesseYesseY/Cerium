@@ -14,6 +14,15 @@ public class Profile(string id)
         Attributes[key] = val;
     }
 
+    public bool TrySetAttribute(string key, object val)
+    {
+        if (Attributes[key] == val)
+            return false;
+
+        Attributes[key] = val;
+        return true;
+    }
+
     public void AddItem(Item item)
     {
         Items.Add(item);

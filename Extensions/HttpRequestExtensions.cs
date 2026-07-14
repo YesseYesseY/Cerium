@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Cerium.Extensions;
@@ -42,4 +43,7 @@ public static class HttpRequestExtensions
 
         return new FortniteBuildInfo(0.0f);
     }
+
+    public static async Task WriteBody(this HttpRequest request) =>
+        Console.WriteLine(Encoding.UTF8.GetString((await request.BodyReader.ReadAsync()).Buffer));
 }

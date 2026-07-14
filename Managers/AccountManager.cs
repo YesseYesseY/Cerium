@@ -7,13 +7,16 @@ public static class AccountManager
     private static readonly Dictionary<Guid, Account> AccountCache = new();
     private static readonly string AccountsPath = Path.Join(AppDomain.CurrentDomain.BaseDirectory, "Accounts");
 
+    public static void Save(Account account)
+    {
+        File.WriteAllText(Path.Join(AccountsPath, $"{account.Id:N}.json"), JsonSerializer.Serialize(account));
+    }
+
     private static Account Create(string username)
     {
         var account = new Account(username);
         AccountCache[account.Id] = account;
-
-        File.WriteAllText(Path.Join(AccountsPath, $"{account.Id:N}.json"), JsonSerializer.Serialize(account));
-
+        Save(account);
         return account;
     }
 
@@ -47,7 +50,7 @@ public static class AccountManager
             if (account is null) continue;
 
             AccountCache[account.Id] = account;
-            Console.WriteLine($"Added account {account.Username} to cache");
+            Console.WriteLine($"Added account {account.Username} to cache {account.Id}");
         }
     }
 }
