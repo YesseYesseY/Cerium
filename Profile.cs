@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Cerium;
@@ -20,6 +21,7 @@ public class Profile(string id)
             return false;
 
         Attributes[key] = val;
+
         return true;
     }
 
@@ -94,6 +96,17 @@ public class AthenaProfile : Profile
             item.BuildLimit = i;
             AddItem(item);
         }
+
+        // From 14 Days of Fortnite
+        AddItem(new Item("AthenaBackpack:BID_192_WinterHolidayFemale"));
+        AddItem(new Item("AthenaItemWrap:Wrap_009_NewYears"));
+        AddItem(new Item("AthenaLoadingScreen:LSID_094_HolidaySpecial"));
+
+        // Free reward from the Season 5 Battle Pass
+        AddItem(new Item("AthenaSkyDiveContrail:Trails_ID_011_Glitch"));
+
+        // Free reward from the Season 7 Battle Pass
+        AddItem(new Item("AthenaMusicPack:MusicPack_005_Disco"));
 
         AddItem(new Item("CosmeticLocker:CosmeticLocker_Athena"));
         SetAttribute("loadouts", new[]

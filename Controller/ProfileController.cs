@@ -9,10 +9,28 @@ public record SetBattleRoyaleBannerBody(string homebaseBannerIconId, string home
 {
 }
 
+public record EquipBattleRoyaleCustomizationBody( string slotName, string itemToSlot,
+    int indexWithinSlot, object[] variantUpdates)
+{
+}
+
 [CeriumController]
 public static class ProfileController
 {
-    public static object StatModified(string name, string value)
+    public static Dictionary<string, string> CosmeticTypeToAttribute = new()
+    {
+        { "Glider", "favorite_glider"},
+        { "Pickaxe", "favorite_pickaxe"},
+        { "Character", "favorite_character"},
+        // { "Dance", "favorite_dance"},
+        // { "ItemWrap", "favorite_itemwraps"},
+        { "Backpack", "favorite_backpack"},
+        { "SkyDiveContrail", "favorite_skydivecontrail" },
+        { "LoadingScreen", "favorite_loadingscreen" },
+        { "MusicPack", "favorite_musicpack"}
+    };
+
+    public static object StatModified(string name, object value)
     {
         return new
         {
@@ -61,6 +79,24 @@ public static class ProfileController
                     changes.Add(StatModified("banner_icon", body.homebaseBannerIconId));
                     increaseRvn = true;
                 }
+                break;
+            case "EquipBattleRoyaleCustomization":
+                var equipbody = await request.ReadFromJsonAsync<EquipBattleRoyaleCustomizationBody>();
+                if (equipbody is null)
+                    break;
+
+                if (!CosmeticTypeToAttribute.TryGetValue(equipbody.slotName, out var attributeName))
+                {
+                    Console.WriteLine($"Cosmetic type not found: \"{equipbody.slotName}\"");
+                    break;
+                }
+
+                if (profile.TrySetAttribute(attributeName, equipbody.itemToSlot))
+                {
+                    changes.Add(StatModified(attributeName, profile.Attributes[attributeName]));
+                    increaseRvn = true;
+                }
+
                 break;
             default:
                 var change = new
