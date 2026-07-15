@@ -1,4 +1,5 @@
 using Cerium.Attributes;
+using Cerium.Extensions;
 using Cerium.Managers;
 using Microsoft.AspNetCore.Mvc;
 
@@ -34,8 +35,9 @@ public static class AccountController
             return Results.NotFound();
         }
 
-        string username = form["username"].ToString();
+        var username = form["username"].ToString();
         var account = AccountManager.GetOrCreateFromUsername(username);
+        account.CurrentBuildInfo = request.GetBuildInfo();
 
         return Results.Json(new
         {

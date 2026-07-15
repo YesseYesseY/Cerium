@@ -1,7 +1,8 @@
 namespace Cerium;
 
-public class Item(string id, int quantity = 1)
+public class Item(string profileId, string id, int quantity = 1)
 {
+    public string ProfileId { get; init; } = profileId;
     public string Id { get; set; } = id;
     public int Quantity { get; set; } = quantity;
     public Dictionary<string, object> Attributes { get; set; } = new();

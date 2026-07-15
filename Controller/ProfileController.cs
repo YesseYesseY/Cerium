@@ -22,8 +22,8 @@ public static class ProfileController
         { "Glider", "favorite_glider"},
         { "Pickaxe", "favorite_pickaxe"},
         { "Character", "favorite_character"},
-        // { "Dance", "favorite_dance"},
-        // { "ItemWrap", "favorite_itemwraps"},
+        { "Dance", "favorite_dance"},
+        { "ItemWrap", "favorite_itemwraps"},
         { "Backpack", "favorite_backpack"},
         { "SkyDiveContrail", "favorite_skydivecontrail" },
         { "LoadingScreen", "favorite_loadingscreen" },
@@ -48,18 +48,15 @@ public static class ProfileController
         var account = AccountManager.GetFromAccountId(accountId);
         if (account is null)
             return Results.NotFound();
+        var loadout = account.CurrentLoadout;
 
         var profileId = "common_core";
         if (request.Query.TryGetValue("profileId", out var val))
             profileId = val.ToString();
 
-        List<object> changes = new();
-        var profile = account.GetOrCreateProfile(profileId);
+        List<object> changes = [];
 
-        var baseRvn = profile.Rvn;
-
-        Console.WriteLine($"Operation: \"{operation}\"");
-
+        var baseRvn = account.Rvn;
         var increaseRvn = false;
         switch (operation)
         {
@@ -68,13 +65,13 @@ public static class ProfileController
                 if (body is null)
                     break;
 
-                if (profile.TrySetAttribute("banner_color", body.homebaseBannerColorId))
+                if (loadout.SetBannerColor(body.homebaseBannerColorId))
                 {
                     changes.Add(StatModified("banner_color", body.homebaseBannerColorId));
                     increaseRvn = true;
                 }
 
-                if (profile.TrySetAttribute("banner_icon", body.homebaseBannerIconId))
+                if (loadout.SetBannerIcon(body.homebaseBannerIconId))
                 {
                     changes.Add(StatModified("banner_icon", body.homebaseBannerIconId));
                     increaseRvn = true;
@@ -85,64 +82,73 @@ public static class ProfileController
                 if (equipbody is null)
                     break;
 
-                if (!CosmeticTypeToAttribute.TryGetValue(equipbody.slotName, out var attributeName))
+                object? setAttributeRet = null;
+                switch (equipbody.slotName)
                 {
-                    Console.WriteLine($"Cosmetic type not found: \"{equipbody.slotName}\"");
-                    break;
+                    case "Glider":
+                        setAttributeRet = loadout.SetGlider(equipbody.itemToSlot);
+                        break;
+                    case "Pickaxe":
+                        setAttributeRet = loadout.SetPickaxe(equipbody.itemToSlot);
+                        break;
+                    case "Character":
+                        setAttributeRet = loadout.SetCharacter(equipbody.itemToSlot);
+                        break;
+                    case "Dance":
+                        setAttributeRet = loadout.SetDance(equipbody.itemToSlot, equipbody.indexWithinSlot);
+                        break;
+                    case "ItemWrap":
+                        setAttributeRet = loadout.SetItemWrap(equipbody.itemToSlot, equipbody.indexWithinSlot);
+                        break;
+                    case "Backpack":
+                        setAttributeRet = loadout.SetBackpack(equipbody.itemToSlot);
+                        break;
+                    case "SkyDiveContrail":
+                        setAttributeRet = loadout.SetContrail(equipbody.itemToSlot);
+                        break;
+                    case "LoadingScreen":
+                        setAttributeRet = loadout.SetLoadingScreen(equipbody.itemToSlot);
+                        break;
+                    case "MusicPack":
+                        setAttributeRet = loadout.SetMusicPack(equipbody.itemToSlot);
+                        break;
                 }
 
-                if (profile.TrySetAttribute(attributeName, equipbody.itemToSlot))
+                if (setAttributeRet is not null)
                 {
-                    changes.Add(StatModified(attributeName, profile.Attributes[attributeName]));
+                    if (!CosmeticTypeToAttribute.TryGetValue(equipbody.slotName, out var attributeName))
+                    {
+                        Console.WriteLine($"Cosmetic type not found: \"{equipbody.slotName}\"");
+                        break;
+                    }
+
+                    changes.Add(StatModified(attributeName, setAttributeRet));
                     increaseRvn = true;
                 }
 
                 break;
             default:
-                var change = new
+                changes.Add(new
                 {
                     changeType = "fullProfileUpdate",
-                    profile = new
-                    {
-                        _id = "yes",
-                        created = account.Created,
-                        updated = account.Created,
-                        rvn = profile.Rvn,
-                        wipeNumber = 0,
-                        accountId = account.Id,
-                        profileId = profileId,
-                        version = "uwu",
-                        items = profile.Items
-                            .Where(i => i.BuildLimit < 0.0f || buildInfo.Build >= i.BuildLimit )
-                            .ToDictionary(i => i.Id, i => i.Objectify()),
-                        stats = new
-                        {
-                            attributes = profile.Attributes
-                        },
-                        commandRevision = profile.Rvn
-                    }
-                };
-
-                if (profileId == "athena")
-                    change.profile.stats.attributes["season_num"] = buildInfo.Season;
-
-                changes.Add(change);
+                    profile = account.GetProfile(profileId)
+                });
                 break;
         }
 
         if (increaseRvn)
         {
-            profile.Rvn++;
+            account.Rvn++;
             AccountManager.Save(account);
         }
 
         return Results.Json(new
         {
-            profileRevision = profile.Rvn,
+            profileRevision = account.Rvn,
             profileId = profileId,
             profileChangesBaseRevision = baseRvn,
             profileChanges = changes,
-            profileCommandRevision = profile.Rvn,
+            profileCommandRevision = account.Rvn,
             serverTime = DateTime.UtcNow,
             responseVersion = 1
         });
