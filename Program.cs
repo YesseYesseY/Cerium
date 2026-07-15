@@ -13,7 +13,7 @@ builder.Logging.ClearProviders();
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.Converters.Add(new DateTimeJsonConverter());
-    options.SerializerOptions.Converters.Add(new GuidJsonConverter());
+    // options.SerializerOptions.Converters.Add(new GuidJsonConverter());
 });
 
 var app = builder.Build();

@@ -5,14 +5,15 @@ using Cerium.Managers;
 
 namespace Cerium.Controller;
 
-public record SetBattleRoyaleBannerBody(string homebaseBannerIconId, string homebaseBannerColorId)
-{
-}
+public record SetBattleRoyaleBannerBody(string homebaseBannerIconId, string homebaseBannerColorId);
 
-public record EquipBattleRoyaleCustomizationBody( string slotName, string itemToSlot,
-    int indexWithinSlot, object[] variantUpdates)
-{
-}
+public record EquipBattleRoyaleCustomizationBody(
+    string slotName,
+    string itemToSlot,
+    int indexWithinSlot,
+    object[] variantUpdates);
+
+public record MarkItemSeenBody(List<string> itemIds);
 
 [CeriumController]
 public static class ProfileController
@@ -48,7 +49,7 @@ public static class ProfileController
         var account = AccountManager.GetFromAccountId(accountId);
         if (account is null)
             return Results.NotFound();
-        var loadout = account.CurrentLoadout;
+        var legacyLoadout = account.LegacyLoadout;
 
         var profileId = "common_core";
         if (request.Query.TryGetValue("profileId", out var val))
@@ -60,18 +61,21 @@ public static class ProfileController
         var increaseRvn = false;
         switch (operation)
         {
+            // case "MarkItemSeen":
+            //     var markseenbody = await request.ReadFromJsonAsync<MarkItemSeenBody>();
+            //     break;
             case "SetBattleRoyaleBanner":
                 var body = await request.ReadFromJsonAsync<SetBattleRoyaleBannerBody>();
                 if (body is null)
                     break;
 
-                if (loadout.SetBannerColor(body.homebaseBannerColorId))
+                if (legacyLoadout.SetValue("BannerColor", body.homebaseBannerColorId) is not null)
                 {
                     changes.Add(StatModified("banner_color", body.homebaseBannerColorId));
                     increaseRvn = true;
                 }
 
-                if (loadout.SetBannerIcon(body.homebaseBannerIconId))
+                if (legacyLoadout.SetValue("BannerIcon", body.homebaseBannerIconId) is not null)
                 {
                     changes.Add(StatModified("banner_icon", body.homebaseBannerIconId));
                     increaseRvn = true;
@@ -82,39 +86,9 @@ public static class ProfileController
                 if (equipbody is null)
                     break;
 
-                object? setAttributeRet = null;
-                switch (equipbody.slotName)
-                {
-                    case "Glider":
-                        setAttributeRet = loadout.SetGlider(equipbody.itemToSlot);
-                        break;
-                    case "Pickaxe":
-                        setAttributeRet = loadout.SetPickaxe(equipbody.itemToSlot);
-                        break;
-                    case "Character":
-                        setAttributeRet = loadout.SetCharacter(equipbody.itemToSlot);
-                        break;
-                    case "Dance":
-                        setAttributeRet = loadout.SetDance(equipbody.itemToSlot, equipbody.indexWithinSlot);
-                        break;
-                    case "ItemWrap":
-                        setAttributeRet = loadout.SetItemWrap(equipbody.itemToSlot, equipbody.indexWithinSlot);
-                        break;
-                    case "Backpack":
-                        setAttributeRet = loadout.SetBackpack(equipbody.itemToSlot);
-                        break;
-                    case "SkyDiveContrail":
-                        setAttributeRet = loadout.SetContrail(equipbody.itemToSlot);
-                        break;
-                    case "LoadingScreen":
-                        setAttributeRet = loadout.SetLoadingScreen(equipbody.itemToSlot);
-                        break;
-                    case "MusicPack":
-                        setAttributeRet = loadout.SetMusicPack(equipbody.itemToSlot);
-                        break;
-                }
+                var statValue = legacyLoadout.SetValue(equipbody.slotName, equipbody.itemToSlot, equipbody.indexWithinSlot);
 
-                if (setAttributeRet is not null)
+                if (statValue is not null)
                 {
                     if (!CosmeticTypeToAttribute.TryGetValue(equipbody.slotName, out var attributeName))
                     {
@@ -122,12 +96,14 @@ public static class ProfileController
                         break;
                     }
 
-                    changes.Add(StatModified(attributeName, setAttributeRet));
+                    changes.Add(StatModified(attributeName, statValue));
                     increaseRvn = true;
                 }
 
                 break;
             default:
+                Console.WriteLine($"Operation: \"{operation}\"");
+
                 changes.Add(new
                 {
                     changeType = "fullProfileUpdate",

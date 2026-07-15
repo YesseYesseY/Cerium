@@ -9,9 +9,10 @@ public class Account
     public Guid Id { get; init; }
     public string Username { get; init; }
     public DateTime Created { get; init; } = DateTime.UtcNow;
-    public List<Item> Items { get; init; } = [];
-    public Loadout CurrentLoadout { get; init; } = new();
-
+    public Dictionary<Guid, Item> Items { get; init; } = [];
+    public Guid CurrentLoadoutGuid { get; set; } = Guid.Empty;
+    public Loadout LegacyLoadout { get; set; } = new();
+    [JsonIgnore] public Loadout CurrentLoadout => ((LoadoutItem)Items[CurrentLoadoutGuid]).ItemLoadout;
     [JsonIgnore] public string Email => $"{Id:N}@yesmail.com";
     [JsonIgnore] public FortniteBuildInfo CurrentBuildInfo = new(0.0f);
     [JsonIgnore] public int Rvn = 1;
@@ -27,21 +28,76 @@ public class Account
         Id = Guid.NewGuid();
         Username = username;
 
+        CurrentLoadoutGuid = AddItem(new LoadoutItem("Cerium Loadout")).ItemGuid;
+
         for (var i = 0; i < 44; i++)
         {
-            Items.Add(new Item("common_core", $"HomebaseBannerColor:DefaultColor{i + 1}")
+            AddItem(new Item("common_core", $"HomebaseBannerColor:DefaultColor{i + 1}")
             {
                 BuildLimit = i >= 21 ? 11.00f : -1.0f
             });
         }
 
         for (var i = 0; i < 31; i++)
-            Items.Add(new Item("common_core", $"HomebaseBannerIcon:StandardBanner{i + 1}"));
+            AddItem(new Item("common_core", $"HomebaseBannerIcon:StandardBanner{i + 1}"));
 
-        Items.Add(new Item("athena", "AthenaDance:EID_DanceMoves"));
-        Items.Add(new Item("athena", "AthenaDance:EID_BoogieDown"));
-        Items.Add(new Item("athena", "AthenaPickaxe:DefaultPickaxe"));
-        Items.Add(new Item("athena", "AthenaGlider:DefaultGlider"));
+        LegacyLoadout.Dance[0] = AddItem(new Item("athena", "AthenaDance:EID_DanceMoves")).ItemGuid.ToString();
+        AddItem(new Item("athena", "AthenaDance:EID_BoogieDown"));
+        LegacyLoadout.Pickaxe = AddItem(new Item("athena", "AthenaPickaxe:DefaultPickaxe")).ItemGuid.ToString();
+        LegacyLoadout.Glider = AddItem(new Item("athena", "AthenaGlider:DefaultGlider")).ItemGuid.ToString();
+
+        CurrentLoadout.Dance[0] = GetItem(Guid.Parse(LegacyLoadout.Dance[0]))?.Id ?? "";
+        CurrentLoadout.Pickaxe = GetItem(Guid.Parse(LegacyLoadout.Pickaxe))?.Id ?? "";
+        CurrentLoadout.Glider = GetItem(Guid.Parse(LegacyLoadout.Glider))?.Id ?? "";
+    }
+
+    public Item AddItem(Item item)
+    {
+        Items[item.ItemGuid] = item;
+        return item;
+    }
+
+    public Item? GetItem(Guid itemGuid)
+    {
+        return Items.GetValueOrDefault(itemGuid);
+    }
+
+    public Item? GetItem(string itemId)
+    {
+        return Items.Values.FirstOrDefault(item => item.Id == itemId);
+    }
+
+    private object GetProfileAttributes(string profileId)
+    {
+        if (profileId == "athena")
+        {
+            return new
+            {
+                favorite_skydivecontrail = LegacyLoadout.SkyDiveContrail,
+                favorite_glider = LegacyLoadout.Glider,
+                favorite_pickaxe = LegacyLoadout.Pickaxe,
+                favorite_character = LegacyLoadout.Character,
+                favorite_backpack = LegacyLoadout.Backpack,
+                favorite_loadingscreen = LegacyLoadout.LoadingScreen,
+                favorite_musicpack = LegacyLoadout.MusicPack,
+                favorite_itemwraps = LegacyLoadout.ItemWrap,
+                favorite_dance = LegacyLoadout.Dance,
+                banner_color = LegacyLoadout.BannerColor,
+                banner_icon = LegacyLoadout.BannerIcon,
+                level = 1,
+                book_level = 1,
+                book_purchased = false,
+                season_num = CurrentBuildInfo.Season,
+                use_random_loadout = false,
+                last_applied_loadout = CurrentLoadoutGuid,
+                loadouts = new[] { CurrentLoadoutGuid }
+            };
+        }
+
+        return new
+        {
+
+        };
     }
 
     public object GetProfile(string profileId)
@@ -57,29 +113,12 @@ public class Account
             profileId = profileId,
             version = "uwu",
             items = Items
-                .Where(i => i.ProfileId == profileId)
-                .Where(i => i.BuildLimit < 0.0f || CurrentBuildInfo.Build >= i.BuildLimit )
-                .ToDictionary(i => i.Id, i => i.Objectify()),
+                .Where(i => i.Value.ProfileId == profileId)
+                .Where(i => i.Value.BuildLimit < 0.0f || CurrentBuildInfo.Build >= i.Value.BuildLimit )
+                .ToDictionary(i => i.Key, i => i.Value.Objectify(this)),
             stats = new
             {
-                attributes = new
-                {
-                    favorite_skydivecontrail = CurrentLoadout.Contrail,
-                    favorite_glider = CurrentLoadout.Glider,
-                    favorite_pickaxe = CurrentLoadout.Pickaxe,
-                    favorite_character = CurrentLoadout.Character,
-                    favorite_backpack = CurrentLoadout.Backpack,
-                    favorite_loadingscreen = CurrentLoadout.LoadingScreen,
-                    favorite_musicpack = CurrentLoadout.MusicPack,
-                    favorite_itemwraps = CurrentLoadout.ItemWrap,
-                    favorite_dance = CurrentLoadout.Dance,
-                    banner_color = CurrentLoadout.BannerColor,
-                    banner_icon = CurrentLoadout.BannerIcon,
-                    level = 1 ,
-                    book_level = 1 ,
-                    book_purchased = false,
-                    season_num = CurrentBuildInfo.Season
-                }
+                attributes = GetProfileAttributes(profileId)
             },
             commandRevision = Rvn
         };
