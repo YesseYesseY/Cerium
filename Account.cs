@@ -10,9 +10,13 @@ public class Account
     public string Username { get; init; }
     public DateTime Created { get; init; } = DateTime.UtcNow;
     public Dictionary<Guid, Item> Items { get; init; } = [];
+
+    public bool UseRandomLoadouts { get; set; } = false;
+    public List<Guid> Loadouts { get; set; } = [];
     public Guid CurrentLoadoutGuid { get; set; } = Guid.Empty;
     public Loadout LegacyLoadout { get; set; } = new();
     [JsonIgnore] public Loadout CurrentLoadout => ((LoadoutItem)Items[CurrentLoadoutGuid]).ItemLoadout;
+
     [JsonIgnore] public string Email => $"{Id:N}@yesmail.com";
     [JsonIgnore] public FortniteBuildInfo CurrentBuildInfo = new(0.0f);
     [JsonIgnore] public int Rvn = 1;
@@ -28,7 +32,8 @@ public class Account
         Id = Guid.NewGuid();
         Username = username;
 
-        CurrentLoadoutGuid = AddItem(new LoadoutItem("Cerium Loadout")).ItemGuid;
+        AddLoadout();
+        CurrentLoadoutGuid = Loadouts[0];
 
         for (var i = 0; i < 44; i++)
         {
@@ -57,14 +62,23 @@ public class Account
         return item;
     }
 
-    public Item? GetItem(Guid itemGuid)
+    public Item? GetItem(Guid itemGuid) => Items.GetValueOrDefault(itemGuid);
+    public Item? GetItem(string itemId) => Items.Values.FirstOrDefault(item => item.Id == itemId);
+    public void RemoveItem(Item item) => RemoveItem(item.ItemGuid);
+    public void RemoveItem(Guid itemGuid) => Items.Remove(itemGuid);
+
+    public LoadoutItem AddLoadout(string name = "")
     {
-        return Items.GetValueOrDefault(itemGuid);
+        var item = (LoadoutItem)AddItem(new LoadoutItem(name));
+        Loadouts.Add(item.ItemGuid);
+        return item;
     }
 
-    public Item? GetItem(string itemId)
+    public LoadoutItem AddLoadout(string name, LoadoutItem loadoutItem)
     {
-        return Items.Values.FirstOrDefault(item => item.Id == itemId);
+        var item = (LoadoutItem)AddItem(new LoadoutItem(name, loadoutItem));
+        Loadouts.Add(item.ItemGuid);
+        return item;
     }
 
     private object GetProfileAttributes(string profileId)
@@ -88,9 +102,9 @@ public class Account
                 book_level = 1,
                 book_purchased = false,
                 season_num = CurrentBuildInfo.Season,
-                use_random_loadout = false,
+                use_random_loadout = UseRandomLoadouts,
                 last_applied_loadout = CurrentLoadoutGuid,
-                loadouts = new[] { CurrentLoadoutGuid }
+                loadouts = Loadouts
             };
         }
 
