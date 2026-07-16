@@ -5,7 +5,11 @@ using Cerium.Managers;
 
 namespace Cerium.Controller;
 
-public record SetBattleRoyaleBannerBody(string homebaseBannerIconId, string homebaseBannerColorId);
+// ReSharper disable InconsistentNaming
+
+public record SetBattleRoyaleBannerBody(
+    string homebaseBannerIconId,
+    string homebaseBannerColorId);
 
 public record EquipBattleRoyaleCustomizationBody(
     string slotName,
@@ -13,7 +17,8 @@ public record EquipBattleRoyaleCustomizationBody(
     int indexWithinSlot,
     object[] variantUpdates);
 
-public record MarkItemSeenBody(Guid[] itemIds);
+public record MarkItemSeenBody(
+    Guid[] itemIds);
 
 public record CopyCosmeticLoadoutBody(
     int sourceIndex,
@@ -32,7 +37,8 @@ public record SetCosmeticLockerSlotBody(
     object[] variantUpdates,
     int optLockerUseCountOverride);
 
-public record SetRandomCosmeticLoadoutFlagBody(bool random);
+public record SetRandomCosmeticLoadoutFlagBody(
+    bool random);
 
 public record DeleteCosmeticLoadoutBody(
     int index,
@@ -129,6 +135,11 @@ public static class ProfileController
         var isFullProfileUpdate = false;
         switch (operation)
         {
+            case "PurchaseCatalogEntry":
+            {
+                await request.WriteBody();
+                break;
+            }
             case "SetCosmeticLockerBanner":
             {
                 var body = await request.ReadFromJsonAsync<SetCosmeticLockerBannerBody>();

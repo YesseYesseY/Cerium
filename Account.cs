@@ -108,6 +108,15 @@ public class Account
             };
         }
 
+        if (profileId == "common_core")
+        {
+            return new
+            {
+                mtx_affiliate = "Cerium",
+                mtx_affiliate_set_time = DateTime.UtcNow
+            };
+        }
+
         return new
         {
 

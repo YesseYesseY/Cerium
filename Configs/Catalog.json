@@ -1,0 +1,62 @@
+{
+    "Storefronts": [
+        {
+            "Name": "BRDailyStorefront",
+            "Items": [
+                {
+                    "Id": "AthenaCharacter:CID_001_Athena_Commando_F_Default",
+                    "Quantity": 1,
+                    "Price": 0,
+                    "CurrencyType": "MtxCurrency"
+                },
+                {
+                    "Id": "AthenaCharacter:CID_002_Athena_Commando_F_Default",
+                    "Quantity": 1,
+                    "Price": 0,
+                    "CurrencyType": "MtxCurrency"
+                },
+                {
+                    "Id": "AthenaCharacter:CID_003_Athena_Commando_F_Default",
+                    "Quantity": 1,
+                    "Price": 0,
+                    "CurrencyType": "MtxCurrency"
+                },
+                {
+                    "Id": "AthenaCharacter:CID_004_Athena_Commando_F_Default",
+                    "Quantity": 1,
+                    "Price": 0,
+                    "CurrencyType": "MtxCurrency"
+                },
+                {
+                    "Id": "AthenaCharacter:CID_005_Athena_Commando_M_Default",
+                    "Quantity": 1,
+                    "Price": 0,
+                    "CurrencyType": "MtxCurrency"
+                },
+                {
+                    "Id": "AthenaCharacter:CID_006_Athena_Commando_M_Default",
+                    "Quantity": 1,
+                    "Price": 0,
+                    "CurrencyType": "MtxCurrency"
+                }
+            ]
+        },
+        {
+            "Name": "BRWeeklyStorefront",
+            "Items": [
+                {
+                    "Id": "AthenaCharacter:CID_007_Athena_Commando_M_Default",
+                    "Quantity": 1,
+                    "Price": 0,
+                    "CurrencyType": "MtxCurrency"
+                },
+                {
+                    "Id": "AthenaCharacter:CID_008_Athena_Commando_M_Default",
+                    "Quantity": 1,
+                    "Price": 0,
+                    "CurrencyType": "MtxCurrency"
+                }
+            ]
+        }
+    ]
+}

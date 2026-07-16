@@ -62,5 +62,7 @@ app.MapFallback((HttpContext context) =>
     return Results.NotFound();
 });
 
+StorefrontController.Init();
+
 Console.WriteLine("Running!");
 app.Run("http://127.0.0.1:3551");
