@@ -13,7 +13,7 @@ public record EquipBattleRoyaleCustomizationBody(
     int indexWithinSlot,
     object[] variantUpdates);
 
-public record MarkItemSeenBody(List<string> itemIds);
+public record MarkItemSeenBody(Guid[] itemIds);
 
 [CeriumController]
 public static class ProfileController
@@ -31,7 +31,7 @@ public static class ProfileController
         { "MusicPack", "favorite_musicpack"}
     };
 
-    public static object StatModified(string name, object value)
+    private static object StatModified(string name, object value)
     {
         return new
         {
@@ -41,6 +41,25 @@ public static class ProfileController
         };
     }
 
+    private static object ItemAttributeChanged(Guid itemGuid, string attribName, object attribValue)
+    {
+        return new
+        {
+            changeType = "itemAttrChanged",
+            itemId = itemGuid,
+            attributeName = attribName,
+            attributeValue = attribValue
+        };
+    }
+
+    // From 13.40 I could find:
+    //  - itemAdded
+    //  - itemRemoved
+    //  - itemAttrChanged
+    //  - itemQuantityChanged
+    //  - statModified
+    //  - fullProfileUpdate
+
     [CeriumRoute("POST", "/fortnite/api/game/v2/profile/{accountId}/client/{operation}")]
     public static async Task<IResult> PostProfileOperation(Guid accountId, string operation, HttpRequest request)
     {
@@ -49,6 +68,7 @@ public static class ProfileController
         var account = AccountManager.GetFromAccountId(accountId);
         if (account is null)
             return Results.NotFound();
+
         var legacyLoadout = account.LegacyLoadout;
 
         var profileId = "common_core";
@@ -58,12 +78,27 @@ public static class ProfileController
         List<object> changes = [];
 
         var baseRvn = account.Rvn;
-        var increaseRvn = false;
+        var isFullProfileUpdate = false;
         switch (operation)
         {
-            // case "MarkItemSeen":
-            //     var markseenbody = await request.ReadFromJsonAsync<MarkItemSeenBody>();
-            //     break;
+            case "MarkItemSeen":
+                var markseenbody = await request.ReadFromJsonAsync<MarkItemSeenBody>();
+                if (markseenbody is null)
+                    break;
+
+                foreach (var guid in markseenbody.itemIds)
+                {
+                    var item = account.GetItem(guid);
+                    if (item is null)
+                        continue;
+
+                    item.Seen = true;
+
+                    // IDK if this is needed? Like they mark it as seen the moment it sends the request not on this change
+                    // I'm doing this because it will save the profile.
+                    changes.Add(ItemAttributeChanged(item.ItemGuid, "item_seen", item.Seen));
+                }
+                break;
             case "SetBattleRoyaleBanner":
                 var body = await request.ReadFromJsonAsync<SetBattleRoyaleBannerBody>();
                 if (body is null)
@@ -72,13 +107,11 @@ public static class ProfileController
                 if (legacyLoadout.SetValue("BannerColor", body.homebaseBannerColorId) is not null)
                 {
                     changes.Add(StatModified("banner_color", body.homebaseBannerColorId));
-                    increaseRvn = true;
                 }
 
                 if (legacyLoadout.SetValue("BannerIcon", body.homebaseBannerIconId) is not null)
                 {
                     changes.Add(StatModified("banner_icon", body.homebaseBannerIconId));
-                    increaseRvn = true;
                 }
                 break;
             case "EquipBattleRoyaleCustomization":
@@ -97,7 +130,6 @@ public static class ProfileController
                     }
 
                     changes.Add(StatModified(attributeName, statValue));
-                    increaseRvn = true;
                 }
 
                 break;
@@ -109,10 +141,11 @@ public static class ProfileController
                     changeType = "fullProfileUpdate",
                     profile = account.GetProfile(profileId)
                 });
+                isFullProfileUpdate = true;
                 break;
         }
 
-        if (increaseRvn)
+        if (!isFullProfileUpdate && changes.Count > 0)
         {
             account.Rvn++;
             AccountManager.Save(account);
