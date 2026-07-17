@@ -15,8 +15,11 @@ public class Account
     public List<Guid> Loadouts { get; set; } = [];
     public Guid CurrentLoadoutGuid { get; set; } = Guid.Empty;
     public Loadout LegacyLoadout { get; set; } = new();
-    [JsonIgnore] public Loadout CurrentLoadout => ((LoadoutItem)Items[CurrentLoadoutGuid]).ItemLoadout;
 
+    public string Affiliate { get; set; } = "";
+    public DateTime AffiliateSetTime { get; set; } = DateTime.MinValue;
+
+    [JsonIgnore] public Loadout CurrentLoadout => ((LoadoutItem)Items[CurrentLoadoutGuid]).ItemLoadout;
     [JsonIgnore] public string Email => $"{Id:N}@yesmail.com";
     [JsonIgnore] public FortniteBuildInfo CurrentBuildInfo = new(0.0f);
     [JsonIgnore] public int Rvn = 1;
@@ -112,8 +115,8 @@ public class Account
         {
             return new
             {
-                mtx_affiliate = "Cerium",
-                mtx_affiliate_set_time = DateTime.UtcNow
+                mtx_affiliate = Affiliate,
+                mtx_affiliate_set_time = AffiliateSetTime
             };
         }
 

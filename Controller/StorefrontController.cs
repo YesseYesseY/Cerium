@@ -20,6 +20,7 @@ public class CatalogConfigStorefront
 
 public class CatalogConfig
 {
+    public string[] Affiliates { get; set; }
     public required CatalogConfigStorefront[] Storefronts { get; init; }
 }
 
@@ -80,6 +81,25 @@ public static class StorefrontController
         return Results.Json(new[]
         {
             "1234642F4676A00CE54CA7B32D78AF0C:Nd8vhYp296C+C0TqSIGxu0nBYOFGQ5xBNK5MFjHS8IA="
+        });
+    }
+
+    [CeriumRoute("GET", "/affiliate/api/public/affiliates/slug/{name}")]
+    public static IResult GetAffiliate(string name, HttpRequest request)
+    {
+        if (CatalogConfig is null || !CatalogConfig.Affiliates.Contains(name))
+            return Results.NoContent();
+
+        // This took waaay too long to reverse
+        // Also IDK what avatar or slug is.
+        // All I know is that CheckAffiliateName checks for only status == "ACTIVE"
+        return Results.Json(new
+        {
+            displayName = name,
+            id = name,
+            avatar = (object?)null,
+            slug = name,
+            status = "ACTIVE"
         });
     }
 

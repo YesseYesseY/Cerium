@@ -50,6 +50,9 @@ public record SetCosmeticLockerBannerBody(
     string bannerIconTemplateName,
     string bannerColorTemplateName);
 
+public record SetAffiliateNameBody(
+    string affiliateName);
+
 [CeriumController]
 public static class ProfileController
 {
@@ -135,6 +138,22 @@ public static class ProfileController
         var isFullProfileUpdate = false;
         switch (operation)
         {
+            case "SetAffiliateName":
+            {
+                var body = await request.ReadFromJsonAsync<SetAffiliateNameBody>();
+                if (body is null)
+                    break;
+
+                if (account.Affiliate != body.affiliateName)
+                {
+                    account.Affiliate = body.affiliateName;
+                    account.AffiliateSetTime = DateTime.UtcNow;
+
+                    changes.Add(StatModified("mtx_affiliate", body.affiliateName));
+                    changes.Add(StatModified("mtx_affiliate_set_time", account.AffiliateSetTime));
+                }
+                break;
+            }
             case "PurchaseCatalogEntry":
             {
                 await request.WriteBody();
