@@ -7,6 +7,8 @@ using Cerium.JsonConverters;
 using Cerium.Managers;
 
 AccountManager.Init();
+StorefrontController.Init();
+CloudstorageController.Init();
 
 var builder =  WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
@@ -61,8 +63,6 @@ app.MapFallback((HttpContext context) =>
     Console.WriteLine($"[{context.Request.Method}] \"{context.Request.Path.Value}\"");
     return Results.NotFound();
 });
-
-StorefrontController.Init();
 
 Console.WriteLine("Running!");
 app.Run("http://127.0.0.1:3551");

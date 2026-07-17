@@ -2,6 +2,8 @@ namespace Cerium;
 
 public class Utils
 {
+    public static string ConfigPath => Path.Join(AppDomain.CurrentDomain.BaseDirectory, "Configs");
+
     public static object? SetValue<T>(ref T field, T value)
     {
         if (field is null || field.Equals(value))

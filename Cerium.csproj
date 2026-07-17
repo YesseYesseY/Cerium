@@ -11,4 +11,10 @@
     <Folder Include="Other\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Configs\CloudStorage\DefaultInput.ini">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

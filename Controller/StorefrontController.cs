@@ -141,7 +141,7 @@ public static class StorefrontController
 
     public static void Init()
     {
-        var configPath = Path.Join(AppDomain.CurrentDomain.BaseDirectory, "Configs");
+        var configPath = Utils.ConfigPath;
         var catalogPath = Path.Join(configPath, "Catalog.json");
         var keychainPath = Path.Join(configPath, "Keychain.json");
         CatalogConfig = JsonSerializer.Deserialize<CatalogConfig>(File.ReadAllText(catalogPath));
