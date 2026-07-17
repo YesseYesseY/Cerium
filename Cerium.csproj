@@ -8,13 +8,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Other\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Update="Configs\CloudStorage\DefaultInput.ini">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Configs\CloudStorage\DefaultEngine.ini">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Configs\CloudStorage\DefaultGame.ini">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Other\" />
   </ItemGroup>
 
 </Project>

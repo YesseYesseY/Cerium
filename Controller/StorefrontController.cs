@@ -20,7 +20,7 @@ public class CatalogConfigStorefront
 
 public class CatalogConfig
 {
-    public string[] Affiliates { get; set; }
+    public string[] Affiliates { get; init; } = [];
     public required CatalogConfigStorefront[] Storefronts { get; init; }
 }
 

@@ -107,13 +107,20 @@ public static class AccountController
         {
             if (accountIdStr is null) continue;
 
-            var accountId = new Guid(accountIdStr);
+            var accountId = Guid.Parse(accountIdStr);
             var account = AccountManager.GetFromAccountId(accountId);
             if (account is null) continue;
 
             ret.Add(new
             {
                 id = account.Id,
+                displayName = account.Username,
+                externalAuths = Array.Empty<object>()
+            });
+
+            ret.Add(new
+            {
+                id = account.Id.ToString("N"),
                 displayName = account.Username,
                 externalAuths = Array.Empty<object>()
             });
