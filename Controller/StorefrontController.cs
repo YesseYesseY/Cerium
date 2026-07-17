@@ -78,6 +78,11 @@ public static class StorefrontController
     [CeriumRoute("GET", "/fortnite/api/storefront/v2/keychain")]
     public static IResult GetKeychain(HttpRequest request)
     {
+        if (Keychain is not null)
+        {
+            return Results.Json(Keychain);
+        }
+
         return Results.Json(new[]
         {
             "1234642F4676A00CE54CA7B32D78AF0C:Nd8vhYp296C+C0TqSIGxu0nBYOFGQ5xBNK5MFjHS8IA="
@@ -131,11 +136,15 @@ public static class StorefrontController
         });
     }
 
-    public static CatalogConfig? CatalogConfig;
+    private static CatalogConfig? CatalogConfig { get; set; }
+    private static string[]? Keychain { get; set; }
 
     public static void Init()
     {
-        var catalogPath = Path.Join(AppDomain.CurrentDomain.BaseDirectory, "Configs", "Catalog.json");
+        var configPath = Path.Join(AppDomain.CurrentDomain.BaseDirectory, "Configs");
+        var catalogPath = Path.Join(configPath, "Catalog.json");
+        var keychainPath = Path.Join(configPath, "Keychain.json");
         CatalogConfig = JsonSerializer.Deserialize<CatalogConfig>(File.ReadAllText(catalogPath));
+        Keychain = JsonSerializer.Deserialize<string[]>(File.ReadAllText(keychainPath));
     }
 }
