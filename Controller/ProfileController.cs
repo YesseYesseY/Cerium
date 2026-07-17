@@ -53,6 +53,13 @@ public record SetCosmeticLockerBannerBody(
 public record SetAffiliateNameBody(
     string affiliateName);
 
+public record ClaimMfaEnabledBody(
+    bool bClaimForStw);
+
+public record RemoveGiftBoxBody(
+    Guid? giftBoxItemId,
+    Guid?[]? giftBoxItemIds);
+
 [CeriumController]
 public static class ProfileController
 {
@@ -138,6 +145,49 @@ public static class ProfileController
         var isFullProfileUpdate = false;
         switch (operation)
         {
+            case "RemoveGiftBox":
+            {
+                var body = await request.ReadFromJsonAsync<RemoveGiftBoxBody>();
+                if (body is null)
+                    break;
+
+                var giftBoxes = body.giftBoxItemId is null ? body.giftBoxItemIds : [body.giftBoxItemId];
+                if (giftBoxes is null)
+                    break;
+
+                foreach (var giftBox in giftBoxes)
+                {
+                    if (giftBox is null)
+                        continue;
+
+                    var item = account.GetItem((Guid)giftBox);
+                    if (item is null)
+                        continue;
+
+                    changes.Add(ItemRemoved(item.ItemGuid));
+                    account.RemoveItem(item.ItemGuid);
+                }
+
+                break;
+            }
+            case "ClaimMfaEnabled":
+            {
+                var body = await request.ReadFromJsonAsync<ClaimMfaEnabledBody>();
+                if (body is null)
+                    break;
+
+                if (!account.ClaimedMfaReward)
+                {
+                    account.ClaimedMfaReward = true;
+                    changes.Add(StatModified("mfa_reward_claimed", true));
+
+                    var item = account.AddItem(new Item("athena", "AthenaDance:EID_BoogieDown"));
+                    var giftItem = account.AddItem(new GiftItem("GiftBox:GB_MfaReward", new GiftItemEntry(item)));
+                    changes.Add(ItemAdded(giftItem.ItemGuid, giftItem.Objectify(account)));
+                }
+
+                break;
+            }
             case "SetAffiliateName":
             {
                 var body = await request.ReadFromJsonAsync<SetAffiliateNameBody>();

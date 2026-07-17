@@ -19,6 +19,8 @@ public class Account
     public string Affiliate { get; set; } = "";
     public DateTime AffiliateSetTime { get; set; } = DateTime.MinValue;
 
+    public bool ClaimedMfaReward { get; set; } = false;
+
     [JsonIgnore] public Loadout CurrentLoadout => ((LoadoutItem)Items[CurrentLoadoutGuid]).ItemLoadout;
     [JsonIgnore] public string Email => $"{Id:N}@yesmail.com";
     [JsonIgnore] public FortniteBuildInfo CurrentBuildInfo = new(0.0f);
@@ -50,7 +52,6 @@ public class Account
             AddItem(new Item("common_core", $"HomebaseBannerIcon:StandardBanner{i + 1}"));
 
         LegacyLoadout.Dance[0] = AddItem(new Item("athena", "AthenaDance:EID_DanceMoves")).ItemGuid.ToString();
-        AddItem(new Item("athena", "AthenaDance:EID_BoogieDown"));
         LegacyLoadout.Pickaxe = AddItem(new Item("athena", "AthenaPickaxe:DefaultPickaxe")).ItemGuid.ToString();
         LegacyLoadout.Glider = AddItem(new Item("athena", "AthenaGlider:DefaultGlider")).ItemGuid.ToString();
 
@@ -107,7 +108,8 @@ public class Account
                 season_num = CurrentBuildInfo.Season,
                 use_random_loadout = UseRandomLoadouts,
                 last_applied_loadout = CurrentLoadoutGuid,
-                loadouts = Loadouts
+                loadouts = Loadouts,
+                mfa_reward_claimed = ClaimedMfaReward
             };
         }
 

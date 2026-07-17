@@ -4,6 +4,7 @@ namespace Cerium;
 
 [JsonDerivedType(typeof(Item), typeDiscriminator: "base")]
 [JsonDerivedType(typeof(LoadoutItem), typeDiscriminator: "loadout")]
+[JsonDerivedType(typeof(GiftItem), typeDiscriminator: "gift")]
 public class Item(string profileId, string id, int quantity = 1)
 {
     public Guid ItemGuid { get; init; } = Guid.NewGuid();
